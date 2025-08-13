@@ -1,0 +1,36 @@
+name: dbt CI - Dev
+
+on:
+  push:
+    branches: ["dev"]
+  pull_request:
+    branches: ["dev"]
+
+jobs:
+  dbt-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dbt
+        run: |
+          pip install dbt-core dbt-bigquery 
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Test connection
+        run: dbt debug
+
+      - name: Run models
+        run: dbt run --target dev
+
+      - name: Run tests
+        run: dbt test --target dev
