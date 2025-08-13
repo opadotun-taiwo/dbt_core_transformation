@@ -1,14 +1,20 @@
-name: dbt CI - Dev
+name: dbt CI
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
   pull_request:
-    branches: ["dev"]
+    branches: ["dev", "main"]
 
 jobs:
   dbt-ci:
     runs-on: ubuntu-latest
+    env:
+      BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
+      BIGQUERY_DEV_DATASET: ${{ secrets.BIGQUERY_DEV_DATASET }}
+      BIGQUERY_PROD_DATASET: ${{ secrets.BIGQUERY_PROD_DATASET }}
+      BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_KEYFILE_JSON }}
+      DBT_TARGET: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
 
     steps:
       - name: Checkout repository
@@ -21,16 +27,34 @@ jobs:
 
       - name: Install dbt
         run: |
-          pip install dbt-core dbt-bigquery 
+          pip install dbt-core dbt-bigquery
 
-      - name: Install dbt packages
-        run: dbt deps
+      - name: Create dbt profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          echo "trip_data:" > ~/.dbt/profiles.yml
+          echo "  target: $DBT_TARGET" >> ~/.dbt/profiles.yml
+          echo "  outputs:" >> ~/.dbt/profiles.yml
+          echo "    dev:" >> ~/.dbt/profiles.yml
+          echo "      type: bigquery" >> ~/.dbt/profiles.yml
+          echo "      method: service-account-json" >> ~/.dbt/profiles.yml
+          echo "      project: $BIGQUERY_PROJECT" >> ~/.dbt/profiles.yml
+          echo "      dataset: $BIGQUERY_DEV_DATASET" >> ~/.dbt/profiles.yml
+          echo "      threads: 4" >> ~/.dbt/profiles.yml
+          echo "      keyfile_json: '$BIGQUERY_KEYFILE_JSON'" >> ~/.dbt/profiles.yml
+          echo "    prod:" >> ~/.dbt/profiles.yml
+          echo "      type: bigquery" >> ~/.dbt/profiles.yml
+          echo "      method: service-account-json" >> ~/.dbt/profiles.yml
+          echo "      project: $BIGQUERY_PROJECT" >> ~/.dbt/profiles.yml
+          echo "      dataset: $BIGQUERY_PROD_DATASET" >> ~/.dbt/profiles.yml
+          echo "      threads: 4" >> ~/.dbt/profiles.yml
+          echo "      keyfile_json: '$BIGQUERY_KEYFILE_JSON'" >> ~/.dbt/profiles.yml
 
       - name: Test connection
-        run: dbt debug
+        run: dbt debug --target $DBT_TARGET
 
       - name: Run models
-        run: dbt run --target dev
+        run: dbt run --target $DBT_TARGET
 
       - name: Run tests
-        run: dbt test --target dev
+        run: dbt test --target $DBT_TARGET
