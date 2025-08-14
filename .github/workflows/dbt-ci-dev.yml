@@ -16,7 +16,7 @@ jobs:
       BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
       BIGQUERY_DEV_DATASET: ${{ secrets.BIGQUERY_DEV_DATASET }}
       BIGQUERY_PROD_DATASET: ${{ secrets.BIGQUERY_PROD_DATASET }}
-      BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_KEYFILE_JSON }}
+      BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT }}
       # Default to prod for schedules/manual runs, else choose based on branch
       DBT_TARGET: ${{ github.event_name == 'schedule' && 'prod' || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
 
