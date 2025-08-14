@@ -1,20 +1,24 @@
-name: dbt CI
+name: dbt CI/CD
 
 on:
   push:
     branches: ["dev", "main"]
   pull_request:
     branches: ["dev", "main"]
+  schedule:
+    - cron: "0 9 * * *"  # Runs every day at 00:00 UTC
+  workflow_dispatch:      # Allow manual triggering
 
 jobs:
-  dbt-ci:
+  dbt-ci-cd:
     runs-on: ubuntu-latest
     env:
       BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
       BIGQUERY_DEV_DATASET: ${{ secrets.BIGQUERY_DEV_DATASET }}
       BIGQUERY_PROD_DATASET: ${{ secrets.BIGQUERY_PROD_DATASET }}
       BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_KEYFILE_JSON }}
-      DBT_TARGET: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+      # Default to prod for schedules/manual runs, else choose based on branch
+      DBT_TARGET: ${{ github.event_name == 'schedule' && 'prod' || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
 
     steps:
       - name: Checkout repository
@@ -26,8 +30,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dbt
-        run: |
-          pip install dbt-core dbt-bigquery
+        run: pip install dbt-core dbt-bigquery
 
       - name: Create dbt profiles.yml
         run: |
