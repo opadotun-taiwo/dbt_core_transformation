@@ -59,6 +59,9 @@ jobs:
       - name: Test connection
         run: dbt debug --target $DBT_TARGET
 
+      - name: Install dbt packages
+        run: dbt deps
+
       - name: Run models
         run: dbt run --target $DBT_TARGET
 
