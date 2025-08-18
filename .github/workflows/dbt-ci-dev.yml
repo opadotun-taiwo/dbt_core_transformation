@@ -32,6 +32,9 @@ jobs:
       - name: Install dbt
         run: pip install dbt-core dbt-bigquery
 
+      - name: Create service account key file
+        run: echo "$BIGQUERY_KEYFILE_JSON" > ${GITHUB_WORKSPACE}/keyfile.json
+
       - name: Create dbt profiles.yml
         run: |
           mkdir -p ~/.dbt
@@ -40,18 +43,18 @@ jobs:
           echo "  outputs:" >> ~/.dbt/profiles.yml
           echo "    dev:" >> ~/.dbt/profiles.yml
           echo "      type: bigquery" >> ~/.dbt/profiles.yml
-          echo "      method: service-account-json" >> ~/.dbt/profiles.yml
+          echo "      method: service-account" >> ~/.dbt/profiles.yml
           echo "      project: $BIGQUERY_PROJECT" >> ~/.dbt/profiles.yml
           echo "      dataset: $BIGQUERY_DEV_DATASET" >> ~/.dbt/profiles.yml
           echo "      threads: 4" >> ~/.dbt/profiles.yml
-          echo "      keyfile_json: '$BIGQUERY_KEYFILE_JSON'" >> ~/.dbt/profiles.yml
+          echo "      keyfile: ${GITHUB_WORKSPACE}/keyfile.json" >> ~/.dbt/profiles.yml
           echo "    prod:" >> ~/.dbt/profiles.yml
           echo "      type: bigquery" >> ~/.dbt/profiles.yml
-          echo "      method: service-account-json" >> ~/.dbt/profiles.yml
+          echo "      method: service-account" >> ~/.dbt/profiles.yml
           echo "      project: $BIGQUERY_PROJECT" >> ~/.dbt/profiles.yml
           echo "      dataset: $BIGQUERY_PROD_DATASET" >> ~/.dbt/profiles.yml
           echo "      threads: 4" >> ~/.dbt/profiles.yml
-          echo "      keyfile_json: $BIGQUERY_KEYFILE_JSON" >> ~/.dbt/profiles.yml
+          echo "      keyfile: ${GITHUB_WORKSPACE}/keyfile.json" >> ~/.dbt/profiles.yml
 
       - name: Test connection
         run: dbt debug --target $DBT_TARGET
