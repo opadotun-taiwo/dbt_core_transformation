@@ -51,7 +51,7 @@ jobs:
           echo "      project: $BIGQUERY_PROJECT" >> ~/.dbt/profiles.yml
           echo "      dataset: $BIGQUERY_PROD_DATASET" >> ~/.dbt/profiles.yml
           echo "      threads: 4" >> ~/.dbt/profiles.yml
-          echo "      keyfile_json: '$BIGQUERY_KEYFILE_JSON'" >> ~/.dbt/profiles.yml
+          echo "      keyfile_json: $BIGQUERY_KEYFILE_JSON" >> ~/.dbt/profiles.yml
 
       - name: Test connection
         run: dbt debug --target $DBT_TARGET
