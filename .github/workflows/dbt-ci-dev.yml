@@ -62,6 +62,9 @@ jobs:
       - name: Install dbt packages
         run: dbt deps
 
+      - name: Seed data
+        run: dbt seed --target $DBT_TARGET
+        
       - name: Run models
         run: dbt run --target $DBT_TARGET
 
