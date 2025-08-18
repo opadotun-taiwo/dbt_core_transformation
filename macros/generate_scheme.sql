@@ -5,3 +5,4 @@
 
 
 -- dbt run-operation generate_model_yaml --args '{"model_names": ["dm_montly_zone_revenue", "dim_zone", "fact_trips"]}'
+-- dbt run-operation generate_model_yaml --args '{"model_names": ["dm_montly_zone_revenue", "dim_zone", "fact_trips"]}'
